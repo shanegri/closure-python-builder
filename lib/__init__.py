@@ -2,14 +2,14 @@ import os, subprocess, json
 
 def transpilePage(moduleDir, pageDir, destPath):
     print("Bundling " + pageDir + " -> " + destPath)
-
+    
     cmdList = [
         "java -jar builder/compilers/compiler.jar ",
         "-O SIMPLE ",
         "-W QUIET ",
         "--dependency_mode STRICT ",
         "--entry_point=" + pageDir + "index.js ",
-        "--js_module_root dev/resources/js-src ",
+        "--js_module_root "+os.path.commonprefix([moduleDir, pageDir])+" ",
         "--module_resolution NODE ",
         "--language_in ECMASCRIPT6 ",
         "--language_out ECMASCRIPT5_STRICT ",
@@ -24,15 +24,31 @@ def transpilePage(moduleDir, pageDir, destPath):
     print("")
 
 
-
 def loadConfig(root):
     config_path = root + "closure.json"
     if not os.path.exists(config_path):
-        print "No Config" #TODO: Throw error
-        return
+        raise Exception("No config found")
     
+    required_params = ["name", "modules", "pages", "destination"]
     with open(config_path, "r") as f:
-        return json.load(f)
+        config = json.load(f)
+        for i in required_params:
+            if i not in config: raise Exception("Missing config param: " + i)
+
+        def validateFolder(path):
+            if not path.endswith("/"): path = path + "/"
+
+            if not os.path.isdir(path):
+                raise Exception("Invalid path: " + path)
+
+            return path
+
+        config[  'modules'  ] = validateFolder(root + config[  'modules'  ])
+        config[   'pages'   ] = validateFolder(root + config[   'pages'   ])
+        config['destination'] = validateFolder(root + config['destination'])
+
+        return config
+
 
 '''
 Return map in this format:

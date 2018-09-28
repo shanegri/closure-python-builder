@@ -1,13 +1,15 @@
-import subprocess, os, lib
+import os, lib
 
 #TODO: Command line parsing
 
-config = lib.loadConfig("dev/") #TODO: config validation
+project_path = "dev/"
 
-name = config['name']
-modules = "dev/" + config['modules']
-pages   = "dev/" + config['pages']
-dest    = "dev/" + config['destination']
+config = lib.loadConfig(project_path) 
+
+name    = config[   'name'    ]
+modules = config[  'modules'  ]
+pages   = config[   'pages'   ]
+dest    = config['destination']
 
 #load old edit dates
 if not os.path.exists("builder/date_cache/" + name + ".json"):
@@ -24,7 +26,7 @@ pages_to_compile = lib.pagesToTranspile(old_edit_dates, new_edit_dates, pages)
 #compile necessary pages
 for i in pages_to_compile:
     lib.transpilePage(modules, pages + i + "/", dest + i + ".js")
+    #TODO: Error checking
 
 #store new edit dates
 lib.storeEditDates(new_edit_dates, name)
-
