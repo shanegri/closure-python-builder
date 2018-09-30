@@ -1,32 +1,44 @@
-import os, lib
+import argparse, os, lib
 
-#TODO: Command line parsing
+def main():
 
-project_path = "dev/"
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-p', '--path', default='./', action='store', help='Project directory. Default is ./', metavar='')
+    parser.add_argument('-a', '--all', action='store_true', help='Force compile all pages')
 
-config = lib.loadConfig(project_path) 
+    args = parser.parse_args()
 
-name    = config[   'name'    ]
-modules = config[  'modules'  ]
-pages   = config[   'pages'   ]
-dest    = config['destination']
+    project_path = args.path if args.path.endswith("/") else args.path + "/"
 
-#load old edit dates
-if not os.path.exists("builder/date_cache/" + name + ".json"):
-    old_edit_dates = lib.findEditDates(modules, pages)
-else:
-    old_edit_dates = lib.loadEditDates(name)
+    config = lib.loadConfig(project_path) 
 
-#find new edit dates
-new_edit_dates = lib.findEditDates(modules, pages)
+    name    = config[   'name'    ]
+    modules = config[  'modules'  ]
+    pages   = config[   'pages'   ]
+    dest    = config['destination']
 
-#find pages to compile
-pages_to_compile = lib.pagesToTranspile(old_edit_dates, new_edit_dates, pages)
+    #load old edit dates
+    if not os.path.exists("builder/date_cache/" + name + ".json"):
+        old_edit_dates = lib.findEditDates(modules, pages)
+    else:
+        old_edit_dates = lib.loadEditDates(name)
 
-#compile necessary pages
-for i in pages_to_compile:
-    lib.transpilePage(modules, pages + i + "/", dest + i + ".js")
-    #TODO: Error checking
+    #find new edit dates
+    new_edit_dates = lib.findEditDates(modules, pages)
 
-#store new edit dates
-lib.storeEditDates(new_edit_dates, name)
+    #find pages to compile
+    if args.all:
+        pages_to_compile = os.listdir(pages)
+    else:
+        pages_to_compile = lib.pagesToTranspile(old_edit_dates, new_edit_dates, pages)
+
+    #compile necessary pages
+    for i in pages_to_compile:
+        lib.transpilePage(modules, pages + i + "/", dest + i + ".js")
+
+    #store new edit dates
+    lib.storeEditDates(new_edit_dates, name)
+
+
+if __name__ == "__main__":
+    main()
