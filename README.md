@@ -9,8 +9,6 @@ Version 20180910 of the closure compiler is included in this repository. Newer v
 
 
 ## Usage
-------
-
 
 Clone the script into your app directory.
 
