@@ -66,13 +66,12 @@ $ python closure-python-builder -p <path to app>
 ```
 
 ## Reference
-------
 
 Comamnd line arguments
 
 | Command       |   | Info  |
 | ------------- |:----------:| -----:|
-| -h            | --help     | Displays all cli options |
+| -h            | --help     | Display all cli options |
 | -p   \<VAL>   | --path     | Sets project directory path. Default is './' (Current directory) |
 | -a            | --all      | Ignore file modification date and compile all pages |
 
@@ -80,7 +79,6 @@ Comamnd line arguments
 - [Closure compiler website](https://developers.google.com/closure/compiler/)
 
 ## Possible Future Additions
------
 
 - Integration with closure-stylesheets compiler 
 - Watch mode, i.e. automatically recompile on file changes
