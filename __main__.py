@@ -18,7 +18,7 @@ def main():
     dest    = config['destination']
 
     #load old edit dates
-    if not os.path.exists("builder/date_cache/" + name + ".json"):
+    if not os.path.exists(lib.cpb_name+"/date_cache/" + name + ".json"):
         old_edit_dates = lib.findEditDates(modules, pages)
     else:
         old_edit_dates = lib.loadEditDates(name)
