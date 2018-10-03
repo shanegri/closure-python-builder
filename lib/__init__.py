@@ -1,6 +1,6 @@
-import os, subprocess, json
+import os, subprocess, json, re
 
-cpb_name =  __file__.replace("/lib/__init__.py", "")
+cpb_name =  re.sub("/lib/__init__.pyc?", "", __file__)
 
 def transpilePage(moduleDir, pageDir, destPath):
     print("Bundling " + pageDir + " -> " + destPath)
