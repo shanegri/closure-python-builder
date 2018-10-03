@@ -1,10 +1,12 @@
 import os, subprocess, json
 
+cpb_name =  __file__.replace("/lib/__init__.py", "")
+
 def transpilePage(moduleDir, pageDir, destPath):
     print("Bundling " + pageDir + " -> " + destPath)
     
     cmdList = [
-        "java -jar builder/compilers/compiler.jar ",
+        "java -jar "+cpb_name+"/compilers/compiler.jar ",
         "-O SIMPLE ",
         "-W QUIET ",
         "--dependency_mode STRICT ",
@@ -84,12 +86,12 @@ def findFolderEditDate(folder):
     return max_date
 
 def storeEditDates(edit_dates, name):
-    with open("builder/date_cache/" + name + ".json", "w") as f:
+    with open(cpb_name+"/date_cache/" + name + ".json", "w") as f:
         json.dump(edit_dates, f)
 
 
 def loadEditDates(name):
-    with open("builder/date_cache/" + name + ".json", "r") as f:
+    with open(cpb_name+"/date_cache/" + name + ".json", "r") as f:
         return json.load(f)
 
 
