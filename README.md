@@ -5,7 +5,7 @@
 
 This script is a wrapper for Google's JavaScript [Closure Compiler](https://github.com/google/closure-compiler) that allows for easy set up and configuration. Closure-python-builder saves time by only compiling the files that have changed since the last compilation. This script was tested and developed with Python 2.7.
 
-Version 20180910 of the closure compiler is included in this repository. Newer versions can be downloaded from [here](https://github.com/google/closure-compiler/wiki/Binary-Downloads).
+Versions 20180910 and 20170806 of the closure compiler are included in this repository. 20180910 uses Java 8, 20170806 uses Java 7. You can specify your Java version using 'java-version' in the config file. Accepted values are 7 or 8; default is 8. The Java 8 version is perfered. Newer compiler versions can be downloaded from [here](https://github.com/google/closure-compiler/wiki/Binary-Downloads).
 
 
 ## Usage

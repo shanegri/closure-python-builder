@@ -1,12 +1,14 @@
 import os, subprocess, json, re
 
 cpb_name =  re.sub("/lib/__init__.pyc?", "", __file__)
+compiler_name = "compiler7"
 
 def transpilePage(moduleDir, pageDir, destPath):
+    print("Using " + compiler_name + ".jar")
     print("Bundling " + pageDir + " -> " + destPath)
     
     cmdList = [
-        "java -jar "+cpb_name+"/compilers/compiler.jar ",
+        "java -jar "+cpb_name+"/compilers/"+compiler_name+".jar ",
         "-O SIMPLE ",
         "-W QUIET ",
         "--dependency_mode STRICT ",
@@ -48,6 +50,15 @@ def loadConfig(root):
         config[  'modules'  ] = validateFolder(root + config[  'modules'  ])
         config[   'pages'   ] = validateFolder(root + config[   'pages'   ])
         config['destination'] = validateFolder(root + config['destination'])
+
+        if 'java-version' not in config:
+            config['java-version'] = 8 
+        elif config['java-version'] != 7 and config['java-version'] != 8:
+            print("Invalid java-version given, setting to 8")
+            config['java-version'] = 8 
+
+        global compiler_name
+        compiler_name = "compiler" + str(config['java-version'])
 
         return config
 
