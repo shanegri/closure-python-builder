@@ -15,7 +15,7 @@ def transpilePage( entryFile, dependecies, destFile ):
     cmdList = [
         "java -jar "+cpb_name+"/compilers/"+compiler_name+".jar ",
         "-O SIMPLE ",
-        "-W VERBOSE ",
+        "-W DEFAULT ",
         "--dependency_mode STRICT ",
         "--entry_point='" + entryFile + "' ",
         "--js_module_root "+common+" ",
