@@ -1,28 +1,34 @@
 import os, subprocess, json, re
+from .DependencyBuilder import DependencyBuilder
 
 cpb_name =  re.sub("/lib/__init__.pyc?", "", __file__)
 compiler_name = "compiler7"
 
-def transpilePage(moduleDir, pageDir, destPath):
+def transpilePage( entryFile, dependecies, destFile ):
     print("Using " + compiler_name + ".jar")
-    print("Bundling " + pageDir + " -> " + destPath)
-    
+    print("Bundling " + entryFile + " -> " + destFile)
+
+    dependecies.append(entryFile)
+
+    common = os.path.commonprefix(dependecies)
+
     cmdList = [
         "java -jar "+cpb_name+"/compilers/"+compiler_name+".jar ",
         "-O SIMPLE ",
-        "-W QUIET ",
+        "-W VERBOSE ",
         "--dependency_mode STRICT ",
-        "--entry_point=" + pageDir + "index.js ",
-        "--js_module_root "+os.path.commonprefix([moduleDir, pageDir])+" ",
+        "--entry_point='" + entryFile + "' ",
+        "--js_module_root "+common+" ",
         "--module_resolution NODE ",
         "--language_in ECMASCRIPT6 ",
         "--language_out ECMASCRIPT5_STRICT ",
-        "--js=" + moduleDir + "**.js ",
-        "--js=" +  pageDir  + "**.js ",
-        "--js_output_file='" + destPath + "'",
+        "--js_output_file='" + destFile + "' ",
     ]
 
-    result = subprocess.call("".join(cmdList).split(" "))
+    for f in dependecies:
+        cmdList.append("--js '" + f + "' ")
+
+    result = subprocess.call("".join(cmdList), shell=True)
 
     print("Success" if result == 0 else "Failure")
     print("")
@@ -33,7 +39,7 @@ def loadConfig(root):
     if not os.path.exists(config_path):
         raise Exception("No config found")
     
-    required_params = ["name", "modules", "pages", "destination"]
+    required_params = ["name", "common", "pages", "destination"]
     with open(config_path, "r") as f:
         config = json.load(f)
         for i in required_params:
@@ -47,8 +53,15 @@ def loadConfig(root):
 
             return path
 
-        config[  'modules'  ] = validateFolder(root + config[  'modules'  ])
-        config[   'pages'   ] = validateFolder(root + config[   'pages'   ])
+        
+        configPages = []
+
+        for page in config['pages']:
+            configPages.append(page)
+
+        # config[  'modules'  ] = validateFolder(root + config[  'modules'  ])
+        config[   'common'  ] = validateFolder(root + config['common'])
+        config[   'pages'   ] = configPages
         config['destination'] = validateFolder(root + config['destination'])
 
         if 'java-version' not in config:
@@ -62,25 +75,13 @@ def loadConfig(root):
 
         return config
 
+def storeEditDates(pages, name):
+    edit_dates = {}
+    for page in pages:
+        edit_dates[page.src] = page.edit_date
 
-'''
-Return map in this format:
-modules -> most recent edit date
-pages ->
-        page1 -> most recent edit date
-        page2 -> most recent edit date
-'''
-def findEditDates(modules, pages):
-    date_map = {}
-    date_map['modules'] = findFolderEditDate(modules)
-    pages_map = {}
-    pages_path = os.listdir(pages)
-    for i in pages_path:
-        pages_map[i] = findFolderEditDate(pages + i + "/")
-
-    date_map['pages'] = pages_map
-
-    return date_map
+    with open(cpb_name+"/date_cache/" + name + ".json", "w") as f:
+        json.dump(edit_dates, f)
 
 def findFolderEditDate(folder):
     contents = os.listdir(folder)
@@ -96,30 +97,12 @@ def findFolderEditDate(folder):
 
     return max_date
 
-def storeEditDates(edit_dates, name):
-    with open(cpb_name+"/date_cache/" + name + ".json", "w") as f:
-        json.dump(edit_dates, f)
-
 
 def loadEditDates(name):
     with open(cpb_name+"/date_cache/" + name + ".json", "r") as f:
         return json.load(f)
 
-
-'''
-Return array of pages that need to be transpiled
-'''
-def pagesToTranspile(old_edit_dates, new_edit_dates, pages):
-    pages = os.listdir(pages)
-    if new_edit_dates['modules'] > old_edit_dates['modules']:
-        return pages
-    
-    pages_to_compile = []
-    for i in pages:
-        if i in new_edit_dates['pages'] and i in old_edit_dates['pages'] :
-            if new_edit_dates['pages'][i] > old_edit_dates['pages'][i]:
-                pages_to_compile.append(i)
-        else:
-            pages_to_compile.append(i)
-
-    return pages_to_compile
+def destinationName(page, destination, common):
+    name_rel = page.src_raw.replace(common, "")
+    name = name_rel.replace("/", "$")
+    return os.path.abspath(destination) + "/" + name
