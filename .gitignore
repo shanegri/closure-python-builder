@@ -1,3 +1,4 @@
 *.pyc
 */__pycache__
 datecache/*
+test/test_files/compiled*

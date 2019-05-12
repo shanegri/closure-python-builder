@@ -1,23 +1,28 @@
-import argparse, os, lib
-
+import argparse, os, lib, tests
 
 def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-p', '--path', default='./', action='store', help='Project directory. Default is ./', metavar='')
     parser.add_argument('-a', '--all', action='store_true', help='Force compile all pages')
+    parser.add_argument('-b', '--test', action='store_true', help='Run unit tests')
 
     args = parser.parse_args()
+
+    if(args.test):
+        tests.executeTests()
+        return
+        
 
     project_path = args.path if args.path.endswith("/") else args.path + "/"
 
     config = lib.loadConfig(project_path) 
 
-    name     = config[   'name'    ]
-    pagesSrc = config[   'pages'   ]
-    dest     = config['destination']
+    name     = config['name']
+    pagesSrc = config['sources']
+    dest     = config['compiled']
 
-    pages = []
+    pages = [] # of DependencyBuilder objects
 
     # generate page date 
     for page in pagesSrc:
@@ -33,7 +38,8 @@ def main():
     if args.all:
         pages_to_compile = pages
     else:
-        pages_to_compile = list( filter(lambda p : p.edit_date > old_edit_dates[p.src], pages) )
+        pages_filter = lambda p : p.src not in old_edit_dates or p.edit_date > old_edit_dates[p.src]
+        pages_to_compile = list( filter(pages_filter, pages) )
 
     # compile necessary pages
     for page in pages_to_compile:
