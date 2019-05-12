@@ -27,8 +27,6 @@ def transpilePage( entryFile, dependecies, destFile ):
     for f in dependecies:
         cmdList.append("--js '" + f + "' ")
 
-    print("\n".join(cmdList))
-
     result = subprocess.call("".join(cmdList), shell=True)
 
     print("Success" if result == 0 else "Failure")
